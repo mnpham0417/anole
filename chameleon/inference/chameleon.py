@@ -96,6 +96,7 @@ class TokenManager:
         vqgan_ckpt_path: str,
         device: str | None = None,
     ):
+        print("tokenizer_path: ", tokenizer_path)
         self.tokenizer = Tokenizer.from_file(tokenizer_path)
         self.vocab = VocabInfo(json.load(open(tokenizer_path))["model"]["vocab"])
         self.translation = VocabTranslation(self.vocab, device=device)
@@ -482,12 +483,14 @@ def _worker_impl(
     vocab: VocabInfo,
     dctx: _DistributedContext,
 ):
+    print("Line 491 in worker")
     dist.init_process_group(
         "nccl",
         init_method=init_method,
         world_size=world_size,
         rank=rank,
     )
+    
 
     torch.set_default_device(f"cuda:{rank}")
     torch.cuda.set_device(rank)
@@ -556,25 +559,49 @@ class ChameleonInferenceModel:
         self.dctx = _DistributedContext.make(distributed_mode, world_size)
 
         init_method = f"tcp://0.0.0.0:{random_unused_port()}"
+        for i in range(world_size):
+            print("Minh: ", i)
+        print("Minh: ", world_size)
+        # self.workers = [
+        #     self.dctx.worker_launcher(
+        #         target=_worker_impl,
+        #         args=(init_method, model, world_size, i, self.vocab, self.dctx),
+        #         daemon=True,
+        #     )
+        #     for i in range(world_size)
+        # ]
         self.workers = [
             self.dctx.worker_launcher(
                 target=_worker_impl,
-                args=(init_method, model, world_size, i, self.vocab, self.dctx),
+                args=(init_method, model, world_size, 0, self.vocab, self.dctx),
                 daemon=True,
             )
-            for i in range(world_size)
         ]
+        print("Line 568 in init")
+        print("Length of workers: ", len(self.workers))
         for w in self.workers:
             w.start()
         self.dctx.ready_barrier.wait()
 
+    # def __del__(self):
+        # try:
+        #     with self.dctx.active_key_lock:
+        #         self.dctx.active_key.clear()
+        #     self.dctx.req_q.put([None, None, None, True])
+        #     for w in self.workers:
+        #         w.join()
+        # except FileNotFoundError:
+        #     pass
     def __del__(self):
         try:
-            with self.dctx.active_key_lock:
-                self.dctx.active_key.clear()
-            self.dctx.req_q.put([None, None, None, True])
-            for w in self.workers:
-                w.join()
+            if self.dctx:
+                with self.dctx.active_key_lock:
+                    self.dctx.active_key.clear()
+                self.dctx.req_q.put([None, None, None, True])
+                for w in self.workers:
+                    w.join()
+        except AttributeError:
+            pass 
         except FileNotFoundError:
             pass
 
@@ -642,9 +669,8 @@ class ChameleonInferenceModel:
 
         with self.dctx.active_key_lock:
             self.dctx.active_key[req_key] = True
-
         self.dctx.req_q.put([options, batch_input_ids, req_key, False])
-
+        
         try:
             while key_token := self.dctx.res_q.get():
                 key, token = key_token

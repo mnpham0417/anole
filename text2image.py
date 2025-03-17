@@ -12,6 +12,9 @@ from constants import (
 )
 from typing import List
 
+# set seed
+# torch.manual_seed(42)
+
 def main(args: argparse.Namespace):
     """Main function to generate images from instructions."""
     
@@ -19,6 +22,7 @@ def main(args: argparse.Namespace):
     print(f"Instruction: {args.instruction}")
     print(f"Batch size: {args.batch_size}")
     
+    print("Loading Chameleon model...")
     # Load Chameleon model
     model = ChameleonInferenceModel(
         MODEL_7B_PATH.as_posix(),
@@ -31,6 +35,7 @@ def main(args: argparse.Namespace):
     options = Options()
     options.txt = False
     
+    print("Preparing batch prompts...")
     # Prepare batch prompts
     instructions: List[str] = [args.instruction for _ in range(args.batch_size)]
     batch_prompt_ui = []
@@ -42,11 +47,27 @@ def main(args: argparse.Namespace):
             ],
         ]
     
+    print("Generating images...")
     # Generate images
     image_tokens: torch.LongTensor = model.generate(
         batch_prompt_ui=batch_prompt_ui,
         options=options
     )
+    
+    # for i in range(0, 1024, 25):
+    #     image_tokens_copy = image_tokens.clone()
+    #     #set last i tokens to 1
+    #     # image_tokens_copy[:, -i:] = 1
+    #     #set i random tokens to 1
+        
+    #     random_indices = torch.randint(0, 1024, (1, i))
+    #     image_tokens_copy[:, random_indices] = 1
+    #     images: List[Image.Image] =  model.decode_image(image_tokens_copy)
+    #     os.makedirs(args.save_dir, exist_ok=True)
+    #     image_path = os.path.join(args.save_dir, f"{args.instruction}_{i}.png")
+    #     images[0].save(image_path)
+    #     print(f"Save generated images to {image_path}")
+    
     images: List[Image.Image] =  model.decode_image(image_tokens)
 
     # Save images

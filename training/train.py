@@ -12,6 +12,12 @@ from constants_training import (
     DATASET_TOKENIZED_PATH
 )
 
+# concept = "van_gogh"
+concept = "dog"
+ANOLE_PATH_HF = Path("/scratch/mp5847/workspace/mixed-modal-erasure/src/anole/Anole-7b-v0.1_hf")
+ANOLE_PATH_HF_TRAINED = Path(f"/scratch/mp5847/workspace/mixed-modal-erasure/src/anole/Anole-7b-v0.1_hf_trained_{concept}_<art>")
+DATASET_TOKENIZED_PATH = Path(f"/scratch/mp5847/workspace/mixed-modal-erasure/src/anole/training/data/{concept}/tokenized_metadata.jsonl")
+
 # Define the dataset class
 class TokenizedDataset(Dataset):
     def __init__(self, filepath):

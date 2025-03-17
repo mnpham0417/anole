@@ -15,7 +15,8 @@ from chameleon.inference.transformer import ModelArgs, Transformer
 
 def _convert(model_args: ModelArgs, consolidated_path: Path) -> Transformer:
     old_default_dtype = torch.get_default_dtype()
-    torch.set_default_dtype(torch.bfloat16)
+    # torch.set_default_dtype(torch.bfloat16)
+    torch.set_default_dtype(torch.float32)
 
     model = Transformer(model_args)
 
@@ -66,6 +67,7 @@ def load_model(path: str, rank: int | None = None) -> Transformer:
 
 def detect_shard_count(path: str) -> int:
     src_dir = Path(path)
+    print("path: ", path)
     if (src_dir / "consolidated.pth").exists():
         return 1
     return len(glob.glob(str(src_dir / "consolidated.*.pth")))

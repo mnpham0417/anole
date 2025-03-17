@@ -59,13 +59,15 @@ class Attention(nn.Module):
             dim,
             (self.n_local_heads + 2 * self.n_local_kv_heads) * head_dim,
             bias=False,
-            dtype=torch.bfloat16,
+            # dtype=torch.bfloat16,
+            dtype=torch.float32,
         )
         self.wo = nn.Linear(
             self.n_local_heads * head_dim,
             dim,
             bias=False,
-            dtype=torch.bfloat16,
+            # dtype=torch.bfloat16,
+            dtype=torch.float32,
         )
 
         self.qk_normalization = qk_normalization

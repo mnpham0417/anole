@@ -1625,8 +1625,8 @@ class ChameleonForCausalLM(ChameleonPreTrainedModel):
         logits = logits.float()
 
         # Disallow image tokens which does not include special begin-image and end-image tokens
-        image_tokens = self.model.vocabulary_mapping.image_tokens
-        logits[:, :, image_tokens] = torch.finfo(logits.dtype).min
+        # image_tokens = self.model.vocabulary_mapping.image_tokens
+        # logits[:, :, image_tokens] = torch.finfo(logits.dtype).min
 
         loss = None
         if labels is not None:

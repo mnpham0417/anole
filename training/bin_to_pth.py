@@ -2,12 +2,14 @@ import os
 import re
 import shutil
 from typing import Dict, Optional
-
+from pathlib import Path
 import torch
 from constants_training import (
     ANOLE_PATH_HF_TRAINED,
     ANOLE_PATH_TORCH,
 )
+
+ANOLE_PATH_HF_TRAINED = Path("/scratch/mp5847/workspace/mixed-modal-erasure/src/anole/Anole-7b-v0.1_hf_trained_van_gogh")
 
 files_to_copy = [
     "models/7b/checklist.chk",
@@ -97,6 +99,8 @@ if __name__ == "__main__":
     # Create directories if they do not exist
     os.makedirs(ANOLE_PATH_TORCH_NEW / "models/7b", exist_ok=True)
     os.makedirs(ANOLE_PATH_TORCH_NEW / "tokenizer", exist_ok=True)
+    # print("ANOLE_PATH_TORCH_NEW", ANOLE_PATH_TORCH_NEW)
+    # assert 0
 
     bin_state_dict = torch.load(
         ANOLE_PATH_HF_TRAINED / "pytorch_model.bin",

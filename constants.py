@@ -4,7 +4,9 @@ from dotenv import load_dotenv
 
 load_dotenv(override=True)
 
-ckpt_path = Path(os.getenv("CKPT_PATH", "./data"))
+# ckpt_path = Path(os.getenv("CKPT_PATH", "./data"))
+# ckpt_path = Path(os.getenv("CKPT_PATH", "./Anole-7b-v0.1"))
+ckpt_path = Path(os.getenv("CKPT_PATH", "/scratch/mp5847/workspace/mixed-modal-erasure/src/anole/anole-7b-pth_van_gogh"))
 
 MODEL_7B_PATH = ckpt_path / "models" / "7b"
 
